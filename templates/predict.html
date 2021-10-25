@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <title>Birds Classifier App</title>
+    </head>
+    <body>
+      <div class="title">
+        <h1> Birds Classifier API </h1>
+      </div>
+      
+      
+      <div class="topdiv">
+        <h2> Load Image and Predict</h2>
+        <input id="image-selector" type="file">
+        <button id="predict-button">Predict</button>
+      </div>
+      
+      <div class="middlediv">
+        <h2>Prediction</h2>
+      </div>
+      
+      <div class="normaldiv">
+        <p style="font-weight:bold"> Predicted Car Class: <span id="final-prediction" style="font-weight:normal"></span></p>
+        <p style="font-weight:bold"> Score: <span id="final-score" style="font-weight:normal"></span></p>
+      </div>
+      <div class="middlediv">
+        <img id="selected-image" src="" width="224" height="224"/>
+      </div>
+      
+      <div class="bottomdiv">
+        <h3> Overview of Dataset </h3>
+        <p> Kaggles's dataset is used to train this model. You can find the dataset and the available bird classes <a href="https://www.kaggle.com/gpiosenka/100-bird-species">here</a>. <br> The code for training the model and all the documentation can be found on my Github page <a href="https://github.com/patrickbrus/Cars_Classifier_API">here</a>.</p>
+      </div>
+      
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+        <script>
+          let base64Image;
+          $("#image-selector").change(function() {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+              let dataURL = reader.result;
+              $("#selected-image").attr("src", dataURL);
+              
+              base64Image = dataURL.replace("data:image/jpg;base64,", "");
+              console.log(base64Image);
+            }
+            reader.readAsDataURL($("#image-selector")[0].files[0]);
+            $("#final-prediction").text("");
+            $("#final-score").text("");
+          });
+      
+          $("#predict-button").click(function(event) {
+            let message = {
+              image : base64Image
+            }
+            console.log(message);
+            $.post("http://127.0.0.1:8088/predict", JSON.stringify(message), function(response) {
+              $("#final-prediction").text(response.prediction.winning_class);
+              $("#final-score").text(response.prediction.confidence.toFixed(6));
+              console.log(response);
+            });
+          });
+        </script>
+      </div>
+    </body>
+
+    <style>
+    body {
+        background-color: #939597;
+        }
+
+    .title {
+        text-align: center;
+        font-size: 20px;
+        }
+
+    .topdiv {
+        /*Styling the top "header" for my page*/
+        border-top-style: solid;
+        border-bottom-style: solid;
+        border-color: RoyalBlue;
+        border-width: 2px;
+        padding-left: 5px;
+        padding-top: 1px;
+        padding-bottom: 10px;
+        text-align: center;
+        }
+
+    .middlediv {
+        text-align: center;
+        border-bottom-style: solid;
+        border-color: RoyalBlue;
+        border-width: 2px;
+        }
+    .normaldiv {
+        padding-left: 700px;
+        padding-bottom: 5px;
+        }
+
+    .bottomdiv {
+      padding-top: 1px;
+      padding-left: 5px;
+      text-align: center;
+    }
+    </style>
+    
+    </html>
