@@ -15,6 +15,9 @@ from flask import request
 from flask import jsonify
 from flask import Flask, render_template
 
+# Flag to set whether program should be executed in development or in production
+DEBUG = False
+
 app = Flask(__name__)
 
 @app.route('/')
@@ -67,8 +70,7 @@ def predict():
     }
     return jsonify(response)
 
-
-if __name__ == "__main__":
+def init_app():
     # load class names first
     load_classes(os.path.join(os.getcwd(), "data/class_dict.csv"))
 
@@ -76,5 +78,8 @@ if __name__ == "__main__":
     print(" * Loading Keras model...")
     get_model()
 
+if __name__ == "__main__":
+    init_app()
+
     # start flask app
-    app.run(host='0.0.0.0', port='8088', threaded=False)    
+    app.run(host='0.0.0.0', port='8088', threaded=False, debug=False)    
