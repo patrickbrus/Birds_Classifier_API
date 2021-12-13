@@ -1,6 +1,7 @@
 import base64
 import numpy as np
 import io
+import os
 from PIL import Image
 from tensorflow import keras
 import tensorflow_addons as tfa
@@ -22,7 +23,7 @@ def my_form():
 
 def get_model():
     global model
-    model = load_model(r"model\final_model")
+    model = load_model(os.path.join(os.getcwd(), "model/final_model"))
     print(" * Model loaded!")
 
 def preprocess_image(image, target_size):
@@ -36,7 +37,7 @@ def preprocess_image(image, target_size):
 
     return image
 
-def load_classes(filename=r"data\class_dict.csv"):
+def load_classes(filename=r"data/class_dict.csv"):
     global list_class_names
     
     dict_class_names = pd.read_csv(filename)
@@ -69,11 +70,11 @@ def predict():
 
 if __name__ == "__main__":
     # load class names first
-    load_classes()
+    load_classes(os.path.join(os.getcwd(), "data/class_dict.csv"))
 
     # load trained tensorflow model
     print(" * Loading Keras model...")
     get_model()
 
     # start flask app
-    app.run(port='8088',threaded=False)    
+    app.run(host='0.0.0.0', port='8088', threaded=False)    
