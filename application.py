@@ -15,12 +15,10 @@ from flask import request
 from flask import jsonify
 from flask import Flask, render_template
 
-# Flag to set whether program should be executed in development or in production
-DEBUG = False
 
-app = Flask(__name__)
+application = Flask(__name__)
 
-@app.route('/')
+@application.route('/')
 def my_form():
     return render_template('predict.html')
 
@@ -48,8 +46,9 @@ def load_classes(filename=r"data/class_dict.csv"):
     
 
 
-@app.route("/predict", methods=["POST"])
+@application.route("/predict", methods=["POST"])
 def predict():
+    print("predict")
     message = request.get_json(force=True)
     encoded = message['image'].split(",")[1]
     decoded = base64.b64decode(encoded)
@@ -82,4 +81,4 @@ if __name__ == "__main__":
     init_app()
 
     # start flask app
-    app.run(host='0.0.0.0', port='8088', threaded=False, debug=False)    
+    application.run(host='0.0.0.0')    

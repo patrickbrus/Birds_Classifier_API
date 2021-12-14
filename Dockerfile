@@ -1,7 +1,5 @@
 FROM python:3.9
 
-RUN apt-get update -y
-
 WORKDIR /usr/src/app
 
 # We copy just the requirements.txt first to leverage Docker cache
@@ -10,6 +8,12 @@ COPY ./requirements.txt ./
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./ ./
+# Let' only copy the required files and folders
+ADD ./model ./model
+ADD ./data ./data
+COPY ./application.py ./
+ADD ./templates ./templates
 
-CMD [ "python", "./predict_app.py" ]
+EXPOSE 5000
+
+CMD ["python", "application.py" ]

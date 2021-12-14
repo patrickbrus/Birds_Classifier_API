@@ -54,7 +54,7 @@
               image : base64Image
             }
             console.log(message);
-            $.post("http://127.0.0.1:8088/predict", JSON.stringify(message), function(response) {
+            $.post("/predict", JSON.stringify(message), function(response) {
               $("#final-prediction").text(response.prediction.winning_class);
               $("#final-score").text(response.prediction.confidence.toFixed(6));
               console.log(response);
