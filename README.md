@@ -13,3 +13,6 @@ You can read this article: https://towardsdatascience.com/full-deep-learning-por
 
 ### API Part
 You can read this article: https://towardsdatascience.com/full-deep-learning-portfolio-project-part-2-e37d09a451fa
+
+### Continuous Deployment using Docker, Github Actions and AWS Elastic Beanstalk
+Please refer to this medium article to read more about the deployment part: https://towardsdatascience.com/continuous-deployment-pipeline-using-github-actions-docker-and-aws-185bb3bf41b
