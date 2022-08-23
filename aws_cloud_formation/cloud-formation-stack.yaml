@@ -1,6 +1,7 @@
 
 Resources:
 
+  # only works in us-east-1 region
   ECR:
     Type: AWS::ECR::PublicRepository
     Properties: 
@@ -8,30 +9,30 @@ Resources:
 
   CodeBuildDockerImage:
     Type: AWS::CodeBuild::Project
-      Properties: 
-        Name: birds-classfier-image-build
-        ServiceRole: codebuild-birds-classifier-image-build-service-role
-        Artifacts:
-          Type: NO_ARTIFACTS
-        Environment:
-          Type: LINUX_CONTAINER
-          Image: aws/codebuild/standard:6.0
-          ComputeType: BUILD_GENERAL1_SMALL
-          EnvironmentVariables:
-            - Name: AWS_DEFAULT_REGION
-              Type: PLAINTEXT
-              Value: !Ref "AWS::Region"
-            - Name: AWS_ACCOUNT_ID
-              Type: PLAINTEXT
-              Value: !Ref "AWS::AccountId"
-            - Name: IMAGE_TAG
-              Type: PLAINTEXT
-              Value: latest
-            - Name: IMAGE_REPO_NAME
-              Type: PLAINTEXT
-              Value: !Ref ECR
-          Source:
-            Location: https://github.com/patrickbrus/Birds_Classifier_API.git
-            Type: GITHUB
-           # Auth: 
-           #   Type: OAUTH
+    Properties: 
+      Name: birds-classfier-image-build
+      ServiceRole: codebuild-birds-classifier-image-build-service-role
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        Type: LINUX_CONTAINER
+        Image: aws/codebuild/standard:6.0
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: AWS_DEFAULT_REGION
+            Type: PLAINTEXT
+            Value: !Ref "AWS::Region"
+          - Name: AWS_ACCOUNT_ID
+            Type: PLAINTEXT
+            Value: !Ref "AWS::AccountId"
+          - Name: IMAGE_TAG
+            Type: PLAINTEXT
+            Value: latest
+          - Name: IMAGE_REPO_NAME
+            Type: PLAINTEXT
+            Value: !Ref ECR
+        Source:
+          Location: https://github.com/patrickbrus/Birds_Classifier_API.git
+          Type: GITHUB
+          # Auth: 
+          #   Type: OAUTH
