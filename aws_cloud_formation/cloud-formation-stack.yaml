@@ -31,8 +31,8 @@ Resources:
           - Name: IMAGE_REPO_NAME
             Type: PLAINTEXT
             Value: !Ref ECR
-        Source:
-          Location: https://github.com/patrickbrus/Birds_Classifier_API.git
-          Type: GITHUB
-          # Auth: 
-          #   Type: OAUTH
+      Source:
+        Location: https://github.com/patrickbrus/Birds_Classifier_API.git
+        Type: GITHUB
+        # Auth: 
+        #   Type: OAUTH
