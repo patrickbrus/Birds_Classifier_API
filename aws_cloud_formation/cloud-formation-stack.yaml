@@ -1,21 +1,34 @@
+Parameters:
+  CodeBuildProjectName:
+    Description: CI CodeBuild Project Name
+    Type: String
+    MinLength: 1
+    MaxLength: 255
+    AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
+    Default: birds-classfier-image-build
+
 
 Resources:
-
   # only works in us-east-1 region
   ECR:
-    Type: AWS::ECR::PublicRepository
+    Type: AWS::ECR::Repository
     Properties: 
       RepositoryName: birds-classifier-image-repo
 
-  CodeBuildDockerImage:
+  CodeBuildDockerBirdsClassifierImage:
     Type: AWS::CodeBuild::Project
     Properties: 
-      Name: birds-classfier-image-build
-      ServiceRole: codebuild-birds-classifier-image-build-service-role
+      Name: !Ref CodeBuildProjectName
+      ServiceRole: !Ref CodeBuildBirdsClassifierImageServiceRole
       Artifacts:
         Type: NO_ARTIFACTS
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Sub ${CodeBuildProjectName}-CloudWatchLogs-BuildLogGroup-Name
       Environment:
         Type: LINUX_CONTAINER
+        PrivilegedMode: true
         Image: aws/codebuild/standard:6.0
         ComputeType: BUILD_GENERAL1_SMALL
         EnvironmentVariables:
@@ -36,3 +49,61 @@ Resources:
         Type: GITHUB
         # Auth: 
         #   Type: OAUTH
+  
+  CodeBuildBirdsClassifierImageServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${CodeBuildProjectName}-codebuild-base-policy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource:
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${CodeBuildProjectName}-CloudWatchLogs-BuildLogGroup-Name
+                  - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${CodeBuildProjectName}-CloudWatchLogs-BuildLogGroup-Name:*
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+              - Effect: Allow
+                Resource:
+                  - !Sub arn:aws:s3:::codepipeline-${AWS::Region}-*
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                  - s3:GetBucketAcl
+                  - s3:GetBucketLocation
+              - Effect: Allow
+                Resource:
+                  - !Sub arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/CodeBuildDockerBirdsClassifierImage-*
+                Action:
+                  - codebuild:CreateReportGroup
+                  - codebuild:CreateReport
+                  - codebuild:UpdateReport
+                  - codebuild:BatchPutTestCases
+                  - codebuild:BatchPutCodeCoverages
+        - PolicyName: !Sub ${CodeBuildProjectName}-access-ECR
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource: 
+                  - '*'
+                Action:
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:GetAuthorizationToken
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
