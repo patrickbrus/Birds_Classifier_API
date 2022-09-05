@@ -1,0 +1,16 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...          
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG ../.    
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Creating zip package...
+      - zip -r deploy.zip ../*
+  artifacts:
+    files:
+      - deploy.zip

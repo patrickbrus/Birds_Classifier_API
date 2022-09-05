@@ -47,6 +47,7 @@ Resources:
       Source:
         Location: https://github.com/patrickbrus/Birds_Classifier_API.git
         Type: GITHUB
+        BuildSpec: aws_build_specs/buildspec.yml
         # Auth: 
         #   Type: OAUTH
   
