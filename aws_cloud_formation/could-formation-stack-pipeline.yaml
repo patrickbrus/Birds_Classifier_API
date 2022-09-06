@@ -13,7 +13,7 @@ Parameters:
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
     Default: birds-classfier-image-build
-  ApplicationName:
+  ElasticApplicationName:
     Description: Elastic Beanstalk application name
     Type: String
     MinLength: 1
@@ -26,59 +26,61 @@ Parameters:
     Default: s3-bucket-birds-classifier-cicd
 
 Resources:
-  Type: AWS::CodePipeline::Pipeline
-  Properties:
-    Name: !Ref CodePipelineProjectName
-    RoleArn: !GetAtt BirdsClassifierCodePipelineServiceRole.Arn
-    Stages:
-      - Name: SourceStage
-        Actions:
-          - Name: SourceAction
-            ActionTypeId:
-              Category: Source
-              Owner: AWS
-              Provider: CodeStarSourceConnection
-              Version: "1"
-            OutputArtifacts:
-              - Name: SourceArtifacts
-            RunOrder: 1
-            Configuration:
-              BranchName: master
-              ConnectionArn: !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/d64c6f5e-3572-4ed7-b2a6-da6b6883bc98
-              DetectChanges: "true"
-              FullRepositoryId: patrickbrus/Birds_Classifier_API
-              OutputArtifactFormat: CODE_ZIP
-      - Name: BuildStage
-        Actions:
-          - Name: Build
-            ActionTypeId:
-              Category: Build
-              Owner: AWS
-              Provider: CodeBuild
-              Version: "1"
-            OutputArtifacts:
-              - Name: BuildArtifact
-            InputArtifacts:
-              - Name: SourceArtifact
-            Configuration:
-              ProjectName: !Ref CodeBuildDockerBirdsClassifierImage 
-      - Name: DeployStage
-        Actions:
-          - Name: Deploy
-            ActionTypeId:
-              Category: Deploy
-              Owner: AWS
-              Provider: ElasticBeanstalk
-              Version: "1"
-            RunOrder: 1
-            Configuration:
-              ApplicationName: !Sub {ApplicationName}-app
-              EnvironmentName: !Sub {ApplicationName}-env
-            InputArtifacts:
-              - Name: BuildArtifact
-    ArtifactStore:
-      Location: !Ref S3BucketName
-      Type: S3
+
+  CloudFormationCodePipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Ref CodePipelineProjectName
+      RoleArn: !GetAtt BirdsClassifierCodePipelineServiceRole.Arn
+      Stages:
+        - Name: SourceStage
+          Actions:
+            - Name: SourceAction
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              OutputArtifacts:
+                - Name: SourceArtifacts
+              RunOrder: 1
+              Configuration:
+                BranchName: master
+                ConnectionArn: !Sub arn:aws:codestar-connections:us-east-1:${AWS::AccountId}:connection/d64c6f5e-3572-4ed7-b2a6-da6b6883bc98
+                DetectChanges: "true"
+                FullRepositoryId: patrickbrus/Birds_Classifier_API
+                OutputArtifactFormat: CODE_ZIP
+        - Name: BuildStage
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              OutputArtifacts:
+                - Name: BuildArtifact
+              InputArtifacts:
+                - Name: SourceArtifact
+              Configuration:
+                ProjectName: !Ref CodeBuildDockerBirdsClassifierImage 
+        - Name: DeployStage
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ElasticBeanstalk
+                Version: "1"
+              RunOrder: 1
+              Configuration:
+                ApplicationName: !Sub ${ElasticApplicationName}-app
+                EnvironmentName: !Sub ${ElasticApplicationName}-env
+              InputArtifacts:
+                - Name: BuildArtifact
+      ArtifactStore:
+        Location: !Ref S3BucketName
+        Type: S3
 
   BirdsClassifierCodePipelineServiceRole:
     Type: AWS::IAM::Role
@@ -204,7 +206,7 @@ Resources:
             Value: latest
           - Name: IMAGE_REPO_NAME
             Type: PLAINTEXT
-            Value: !Ref ECR
+            Value: birds-classifier-image
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws_build_specs/buildspec_zip.yml
@@ -277,3 +279,15 @@ Resources:
         BlockPublicPolicy: True
         IgnorePublicAcls: True
         RestrictPublicBuckets: True
+  
+  CloudFormationElasticBeanstalkApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties: 
+      ApplicationName: !Sub ${ElasticApplicationName}-app
+  
+  CloudFormationElasticBeanstalkEvnironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref CloudFormationElasticBeanstalkApplication
+      EnvironmentName: !Sub ${ElasticApplicationName}-env
+      SolutionStackName: 64bit Amazon Linux 2 v3.4.19 running Docker
