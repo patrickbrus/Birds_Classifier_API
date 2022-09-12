@@ -59,9 +59,9 @@ Resources:
                 Provider: CodeBuild
                 Version: "1"
               OutputArtifacts:
-                - Name: BuildArtifact
+                - Name: BuildArtifacts
               InputArtifacts:
-                - Name: SourceArtifact
+                - Name: SourceArtifacts
               Configuration:
                 ProjectName: !Ref CodeBuildDockerBirdsClassifierImage 
         - Name: DeployStage
@@ -77,7 +77,7 @@ Resources:
                 ApplicationName: !Sub ${ElasticApplicationName}-app
                 EnvironmentName: !Sub ${ElasticApplicationName}-env
               InputArtifacts:
-                - Name: BuildArtifact
+                - Name: BuildArtifacts
       ArtifactStore:
         Location: !Ref S3BucketName
         Type: S3
@@ -183,6 +183,10 @@ Resources:
                   - ecr:DescribeImages
                 Resource: "*"
                 Effect: Allow
+              - Action: 
+                  - codestar-connections:UseConnection
+                Resource: "*"
+                Effcet: Allow
 
   CodeBuildDockerBirdsClassifierImage:
     Type: AWS::CodeBuild::Project
@@ -290,4 +294,49 @@ Resources:
     Properties:
       ApplicationName: !Ref CloudFormationElasticBeanstalkApplication
       EnvironmentName: !Sub ${ElasticApplicationName}-env
+      TemplateName:
+        Ref: CloudFormationEBConfigurationTemplate
+
+  CloudFormationEBConfigurationTemplate:
+    Type: AWS::ElasticBeanstalk::ConfigurationTemplate
+    Properties:
+      ApplicationName: !Sub ${ElasticApplicationName}-app
+      Description: AWS ElasticBeanstalk Birds Classifier Configuration Template
+      OptionSettings:
+      - Namespace: aws:autoscaling:asg
+        OptionName: MinSize
+        Value: '1'
+      - Namespace: aws:autoscaling:asg
+        OptionName: MaxSize
+        Value: '1'
+      - Namespace: aws:elasticbeanstalk:environment
+        OptionName: EnvironmentType
+        Value: LoadBalanced
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: IamInstanceProfile
+        Value: !Ref MyInstanceProfile        
       SolutionStackName: 64bit Amazon Linux 2 v3.4.19 running Docker
+  
+  MyInstanceRole:
+    Type: AWS::IAM::Role
+    Properties: 
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Beanstalk EC2 role
+      ManagedPolicyArns: 
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkMulticontainerDocker
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier
+  
+  MyInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles:
+        - !Ref MyInstanceRole
