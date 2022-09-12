@@ -14,8 +14,12 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Creating zip package...
-      - zip -r deploy.zip ./*
+      #- echo Creating zip package...
+      #- zip -r deploy.zip *
 artifacts:
   files:
-    - deploy.zip
+    - templates
+    - application.py
+    - docker-compose.yml
+    - Dockerfile
+    - requirements.txt
