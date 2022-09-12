@@ -101,6 +101,39 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
+                  - 'iam:PassRole'
+                Resource: '*'
+                Effect: Allow
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+                      - elasticbeanstalk.amazonaws.com
+                      - ec2.amazonaws.com
+                      - ecs-tasks.amazonaws.com
+              - Action:
+                  - codecommit:CancelUploadArchive
+                  - codecommit:GetBranch
+                  - codecommit:GetCommit
+                  - codecommit:GetRepository
+                  - codecommit:GetUploadArchiveStatus
+                  - codecommit:UploadArchive
+                Resource: '*'
+                Effect: Allow
+              - Action:
+                  - codedeploy:CreateDeployment
+                  - codedeploy:GetApplication
+                  - codedeploy:GetApplicationRevision
+                  - codedeploy:GetDeployment
+                  - codedeploy:GetDeploymentConfig
+                  - codedeploy:RegisterApplicationRevision
+                Resource: '*'
+                Effect: Allow
+              - Action:
+                  - codestar-connections:UseConnection
+                Resource: '*'
+                Effect: Allow
+              - Action:
                   - elasticbeanstalk:*
                   - ec2:*
                   - elasticloadbalancing:*
@@ -112,44 +145,12 @@ Resources:
                   - rds:*
                   - sqs:*
                   - ecs:*
-                Resource: "*"
+                Resource: '*'
                 Effect: Allow
-              - Action:
-                  - codecommit:GetBranch
-                  - codecommit:GetCommit
-                  - codecommit:GetUploadArchiveStatus
-                  - codecommit:UploadArchive
-                  - codecommit:CancelUploadArchive
-                Resource: "*"
-                Effect: Allow
-              - Action:
-                  - codedeploy:CreateDeployment
-                  - codedeploy:GetApplicationRevision
-                  - codedeploy:GetDeployment
-                  - codedeploy:GetDeploymentConfig
-                  - codedeploy:RegisterApplicationRevision
-                Resource: "*"
-                Effect: Allow
-              - Action:
-                  - codebuild:BatchGetBuilds
-                  - codebuild:StartBuild
-                Resource: "*"
-                Effect: Allow
-              - Action:
-                  - iam:PassRole
-                Resource: "*"
-                Effect: Allow
-                Condition:
-                  StringEqualsIfExists:
-                    iam:PassedToService:
-                      - cloudformation.amazonaws.com
-                      - elasticbeanstalk.amazonaws.com
-                      - ec2.amazonaws.com
-                      - ecs-tasks.amazonaws.com
               - Action:
                   - lambda:InvokeFunction
                   - lambda:ListFunctions
-                Resource: "*"
+                Resource: '*'
                 Effect: Allow
               - Action:
                   - opsworks:CreateDeployment
@@ -160,33 +161,65 @@ Resources:
                   - opsworks:DescribeStacks
                   - opsworks:UpdateApp
                   - opsworks:UpdateStack
-                Resource: "*"
+                Resource: '*'
                 Effect: Allow
               - Action:
+                  - cloudformation:CreateStack
+                  - cloudformation:DeleteStack
+                  - cloudformation:DescribeStacks
+                  - cloudformation:UpdateStack
+                  - cloudformation:CreateChangeSet
+                  - cloudformation:DeleteChangeSet
+                  - cloudformation:DescribeChangeSet
+                  - cloudformation:ExecuteChangeSet
+                  - cloudformation:SetStackPolicy
+                  - cloudformation:ValidateTemplate
+                Resource: '*'
+                Effect: Allow
+              - Action:
+                  - codebuild:BatchGetBuilds
+                  - codebuild:StartBuild
+                  - codebuild:BatchGetBuildBatches
+                  - codebuild:StartBuildBatch
+                Resource: '*'
+                Effect: Allow
+              - Effect: Allow
+                Action:
                   - devicefarm:ListProjects
                   - devicefarm:ListDevicePools
                   - devicefarm:GetRun
                   - devicefarm:GetUpload
                   - devicefarm:CreateUpload
                   - devicefarm:ScheduleRun
-                Resource: "*"
-                Effect: Allow
-              - Action:
+                Resource: '*'
+              - Effect: Allow
+                Action:
                   - servicecatalog:ListProvisioningArtifacts
-                  - servicecatalog:CreateProvisioningArtifacts
-                  - servicecatalog:DescribeProvisioningArtifacts
-                  - servicecatalog:DeleteProvisioningArtifacts
+                  - servicecatalog:CreateProvisioningArtifact
+                  - servicecatalog:DescribeProvisioningArtifact
+                  - servicecatalog:DeleteProvisioningArtifact
                   - servicecatalog:UpdateProduct
-                Resource: "*"
-                Effect: Allow
-              - Action:
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - cloudformation:ValidateTemplate
+                Resource: '*'
+              - Effect: Allow
+                Action:
                   - ecr:DescribeImages
-                Resource: "*"
-                Effect: Allow
-              - Action: 
-                  - codestar-connections:UseConnection
-                Resource: "*"
-                Effcet: Allow
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - states:DescribeExecution
+                  - states:DescribeStateMachine
+                  - states:StartExecution
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - appconfig:StartDeployment
+                  - appconfig:StopDeployment
+                  - appconfig:GetDeployment
+                Resource: '*'
 
   CodeBuildDockerBirdsClassifierImage:
     Type: AWS::CodeBuild::Project
@@ -213,7 +246,7 @@ Resources:
             Value: birds-classifier-image
       Source:
         Type: CODEPIPELINE
-        BuildSpec: aws_build_specs/buildspec_zip.yml
+        BuildSpec: aws_build_specs/buildspec_zip.yaml
 
   CodeBuildBirdsClassifierImageServiceRole:
     Type: AWS::IAM::Role
@@ -242,7 +275,7 @@ Resources:
                   - logs:PutLogEvents
               - Effect: Allow
                 Resource:
-                  - !Sub arn:aws:s3:::codepipeline-${AWS::Region}-*
+                  - !Sub arn:aws:s3:::${S3BucketName}/*
                 Action:
                   - s3:PutObject
                   - s3:GetObject
@@ -258,20 +291,6 @@ Resources:
                   - codebuild:UpdateReport
                   - codebuild:BatchPutTestCases
                   - codebuild:BatchPutCodeCoverages
-        - PolicyName: !Sub ${CodeBuildProjectName}-access-ECR
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Resource: 
-                  - '*'
-                Action:
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:CompleteLayerUpload
-                  - ecr:GetAuthorizationToken
-                  - ecr:InitiateLayerUpload
-                  - ecr:PutImage
-                  - ecr:UploadLayerPart
   
   CloudFormationS3BucketForCodePipeline:
     Type: AWS::S3::Bucket

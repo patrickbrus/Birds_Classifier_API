@@ -1,6 +1,11 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - echo Build started on `date`
+      - echo List all available files
+      - ls -ll
   build:
     commands:
       - echo Build started on `date`
@@ -11,6 +16,6 @@ phases:
       - echo Build completed on `date`
       - echo Creating zip package...
       - zip -r deploy.zip ../*
-  artifacts:
-    files:
-      - deploy.zip
+artifacts:
+  files:
+    - deploy.zip
