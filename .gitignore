@@ -1,3 +1,4 @@
 **/*.jpg
 !example_images/*.jpg
 .ipynb_checkpoints/
+.venv/*

@@ -315,6 +315,22 @@ Resources:
       EnvironmentName: !Sub ${ElasticApplicationName}-env
       TemplateName:
         Ref: CloudFormationEBConfigurationTemplate
+      #VersionLabel:
+      #  Ref: CloudFormationEBApplicationVersion
+
+  #CloudFormationEBApplicationVersion:
+  #  Type: AWS::ElasticBeanstalk::ApplicationVersion
+  #  Properties:
+  #    ApplicationName: !Sub ${ElasticApplicationName}-app
+  #    Description: AWS ElasticBeanstalk Birds Classifier Application Version
+  #    SourceBundle: 
+  #      S3Bucket: 
+  #        Fn::Join: 
+  #          - "-"
+  #          - 
+  #            - "elasticbeanstalk-samples"
+  #            - Ref: "AWS::Region"
+  #      S3Key: "docker-sample-app.zip"
 
   CloudFormationEBConfigurationTemplate:
     Type: AWS::ElasticBeanstalk::ConfigurationTemplate
@@ -333,7 +349,10 @@ Resources:
         Value: LoadBalanced
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: IamInstanceProfile
-        Value: !Ref MyInstanceProfile        
+        Value: !Ref MyInstanceProfile
+      - Namespace: aws:autoscaling:launchconfiguration
+        OptionName: InstanceType
+        Value: c5a.2xlarge     
       SolutionStackName: 64bit Amazon Linux 2 v3.4.19 running Docker
   
   MyInstanceRole:
