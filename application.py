@@ -15,7 +15,6 @@ from flask import request
 from flask import jsonify
 from flask import Flask, render_template
 
-
 application = Flask(__name__)
 
 @application.route('/')
@@ -73,11 +72,11 @@ def init_app():
     # load class names first
     load_classes(os.path.join(os.getcwd(), "data/class_dict.csv"))
 
-    # load trained tensorflow model
     print(" * Loading Keras model...")
     get_model()
 
 if __name__ == "__main__":
+
     init_app()
 
     # start flask app

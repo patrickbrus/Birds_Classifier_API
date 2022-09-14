@@ -244,6 +244,9 @@ Resources:
           - Name: IMAGE_REPO_NAME
             Type: PLAINTEXT
             Value: birds-classifier-image
+          - Name: BUCKET_NAME
+            Type: PLAINTEXT
+            Value: birds-classfier-model-bucket
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws_build_specs/buildspec_zip.yaml

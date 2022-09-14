@@ -14,8 +14,9 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      #- echo Creating zip package...
-      #- zip -r deploy.zip *
+      - echo Delete current model folder and fetch new model from s3
+      - rm -rf model
+      - aws s3 cp --recursive s3://$BUCKET_NAME/final_model/ ./model
 artifacts:
   files:
     - templates
@@ -23,3 +24,4 @@ artifacts:
     - docker-compose.yml
     - Dockerfile
     - requirements.txt
+    - model
