@@ -250,7 +250,7 @@ Resources:
             Value: birds-classifier-image
           - Name: BUCKET_NAME
             Type: PLAINTEXT
-            Value: !Sub {S3BucketNameTrainedModel}
+            Value: !Ref S3BucketNameTrainedModel
           - Name: BUCKET_REGION
             Type: PLAINTEXT
             Value: eu-central-1
@@ -286,7 +286,7 @@ Resources:
               - Effect: Allow
                 Resource:
                   - !Sub arn:aws:s3:::${S3BucketName}/*
-                  - !Sub arn:aws:s3::${S3BucketNameTrainedModel}/*
+                  - !Sub arn:aws:s3:::${S3BucketNameTrainedModel}/*
                 Action:
                   - s3:PutObject
                   - s3:GetObject
