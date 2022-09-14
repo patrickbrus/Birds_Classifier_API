@@ -251,6 +251,9 @@ Resources:
           - Name: BUCKET_NAME
             Type: PLAINTEXT
             Value: !Sub {S3BucketNameTrainedModel}
+          - Name: BUCKET_REGION
+            Type: PLAINTEXT
+            Value: eu-central-1
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws_build_specs/buildspec_zip.yaml
