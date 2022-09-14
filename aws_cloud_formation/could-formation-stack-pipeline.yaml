@@ -363,7 +363,7 @@ Resources:
         Value: !Ref MyInstanceProfile
       - Namespace: aws:autoscaling:launchconfiguration
         OptionName: InstanceType
-        Value: c5a.2xlarge     
+        Value: t2.medium    
       SolutionStackName: 64bit Amazon Linux 2 v3.4.19 running Docker
   
   MyInstanceRole:
