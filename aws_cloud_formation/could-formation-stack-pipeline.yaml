@@ -24,6 +24,10 @@ Parameters:
     Description: Name of the S3 Bucket
     Type: String
     Default: s3-bucket-birds-classifier-cicd
+  S3BucketNameTrainedModel:
+    Description: Name of the S3 Bucket containing the trained model
+    Type: String
+    Default: birds-classifier-model-bucket
 
 Resources:
 
@@ -246,7 +250,7 @@ Resources:
             Value: birds-classifier-image
           - Name: BUCKET_NAME
             Type: PLAINTEXT
-            Value: birds-classfier-model-bucket
+            Value: !Sub {S3BucketNameTrainedModel}
       Source:
         Type: CODEPIPELINE
         BuildSpec: aws_build_specs/buildspec_zip.yaml
@@ -279,6 +283,7 @@ Resources:
               - Effect: Allow
                 Resource:
                   - !Sub arn:aws:s3:::${S3BucketName}/*
+                  - !Sub arn:aws:s3::${S3BucketNameTrainedModel}/*
                 Action:
                   - s3:PutObject
                   - s3:GetObject
