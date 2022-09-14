@@ -6,10 +6,10 @@ phases:
       - echo Build started on `date`
       - echo List all available files
       - ls -ll
-      - git lfs pull
-      #- echo Delete current model folder and fetch new model from s3
-      #- rm -rf model
-      #- aws s3 cp --recursive s3://${BUCKET_NAME}/final_model/ ./model
+      - echo Delete current model folder and fetch new model from s3
+      - rm -rf model
+      - echo Copy from bucket $BUCKET_NAME which is in region $REGION
+      - aws s3 cp --recursive s3://${BUCKET_NAME}/final_model/ ./model --region $REGION
   build:
     commands:
       - echo Build started on `date`
