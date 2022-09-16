@@ -20,9 +20,4 @@ phases:
       - echo Build completed on `date`
 artifacts:
   files:
-    - templates
-    - application.py
-    - docker-compose.yml
-    - Dockerfile
-    - requirements.txt
-    - model
+    - "**/*"
