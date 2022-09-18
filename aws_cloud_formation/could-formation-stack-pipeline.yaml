@@ -5,21 +5,21 @@ Parameters:
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
-    Default: birds-classfier-cicd
+    Default: birds-classifier-cicd
   CodeBuildProjectName:
     Description: CI CodeBuild Project Name
     Type: String
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
-    Default: birds-classfier-image-build
+    Default: birds-classifier-image-build
   ElasticApplicationName:
     Description: Elastic Beanstalk application name
     Type: String
     MinLength: 1
     MaxLength: 255
     AllowedPattern: ^[a-zA-Z][-a-zA-Z0-9]*$
-    Default: birds-classfier
+    Default: birds-classifier
   S3BucketName:
     Description: Name of the S3 Bucket
     Type: String
@@ -70,7 +70,7 @@ Resources:
                 ProjectName: !Ref CodeBuildDockerBirdsClassifierImage 
         - Name: DeployStage
           Actions:
-            - Name: Deploy
+            - Name: DeployToStaging
               ActionTypeId:
                 Category: Deploy
                 Owner: AWS
@@ -79,7 +79,26 @@ Resources:
               RunOrder: 1
               Configuration:
                 ApplicationName: !Sub ${ElasticApplicationName}-app
-                EnvironmentName: !Sub ${ElasticApplicationName}-env
+                EnvironmentName: !Sub ${ElasticApplicationName}-env-staging
+              InputArtifacts:
+                - Name: BuildArtifacts
+            - Name: Approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: '1'
+              RunOrder: 2
+            - Name: DeployToProduction
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ElasticBeanstalk
+                Version: '1'
+              RunOrder: 3
+              Configuration:
+                ApplicationName: !Sub ${ElasticApplicationName}-app
+                EnvironmentName: !Sub ${ElasticApplicationName}-env-prod
               InputArtifacts:
                 - Name: BuildArtifacts
       ArtifactStore:
@@ -319,29 +338,21 @@ Resources:
     Properties: 
       ApplicationName: !Sub ${ElasticApplicationName}-app
   
-  CloudFormationElasticBeanstalkEvnironment:
+  CloudFormationElasticBeanstalkEvnironmentStaging:
     Type: AWS::ElasticBeanstalk::Environment
     Properties:
       ApplicationName: !Ref CloudFormationElasticBeanstalkApplication
-      EnvironmentName: !Sub ${ElasticApplicationName}-env
+      EnvironmentName: !Sub ${ElasticApplicationName}-env-staging
       TemplateName:
         Ref: CloudFormationEBConfigurationTemplate
-      #VersionLabel:
-      #  Ref: CloudFormationEBApplicationVersion
-
-  #CloudFormationEBApplicationVersion:
-  #  Type: AWS::ElasticBeanstalk::ApplicationVersion
-  #  Properties:
-  #    ApplicationName: !Sub ${ElasticApplicationName}-app
-  #    Description: AWS ElasticBeanstalk Birds Classifier Application Version
-  #    SourceBundle: 
-  #      S3Bucket: 
-  #        Fn::Join: 
-  #          - "-"
-  #          - 
-  #            - "elasticbeanstalk-samples"
-  #            - Ref: "AWS::Region"
-  #      S3Key: "docker-sample-app.zip"
+  
+  CloudFormationElasticBeanstalkEvnironmentProduction:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref CloudFormationElasticBeanstalkApplication
+      EnvironmentName: !Sub ${ElasticApplicationName}-env-prod
+      TemplateName:
+        Ref: CloudFormationEBConfigurationTemplate
 
   CloudFormationEBConfigurationTemplate:
     Type: AWS::ElasticBeanstalk::ConfigurationTemplate
